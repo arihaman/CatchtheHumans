@@ -115,11 +115,9 @@
                 padding: 10px 20px;
                 font-size: 16px;
             }
-        　  #startMessage {
-                font-size: 18px; /* モバイル用に小さく設定 */
-                padding: 12px;  /* パディングを少し小さく */
-                width: 80%;  /* 幅を調整してテキストが収まるように */
-                max-width: 300px; /* 最大幅を設定 */
+    
+            #endMessage,#startMessage {
+                font-size: 24px; /* 小さく調整 */
             }
         }
     </style>
@@ -136,18 +134,22 @@
 
     <script>
         window.onload = function() {
-        const message = "れいくんじんくんをクリックしてつかまえてね\n虫をつかまえたらダメだよ～";
+        const message = "れいくんじんくんをクリックしてつかまえてね！\n虫をつかまえたらダメだよ～";
         const startMessage = document.createElement('div');
- 　　   startMessage.id = 'startMessage';
-  　　  startMessage.textContent = message;
-  　　  document.body.appendChild(startMessage);
+        startMessage.id = 'startMessage';
+        startMessage.textContent = message;
+        startMessage.style.position = 'absolute';
+        startMessage.style.top = '50%';
+        startMessage.style.left = '50%';
+        startMessage.style.transform = 'translate(-50%, -50%)';
+        startMessage.style.fontSize = '24px';
+        startMessage.style.color = 'white';
+        startMessage.style.textAlign = 'center';
+        startMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        startMessage.style.padding = '20px';
+        startMessage.style.borderRadius = '10px';
+        document.body.appendChild(startMessage);
 
-    　　// モバイルデバイスでのサイズ調整
-  　　  const isMobile = window.innerWidth <= 600;
-  　　  if (isMobile) {
-        startMessage.style.fontSize = '18px';  // モバイル用にフォントサイズを小さく設定
-        startMessage.style.padding = '12px';   // パディングも少なく設定
-    　　}
         // 5秒後にメッセージを消し、ゲーム開始ボタンを表示
         setTimeout(function() {
             startMessage.style.display = 'none';
