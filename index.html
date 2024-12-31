@@ -134,7 +134,10 @@
     <script>
         window.onload = function() {
         const message = "れいくんじんくんをクリックしてつかまえてね！\n虫をつかまえたらダメだよ～";
-        document.body.appendChild(startMessage);
+        const startMessage = document.createElement('div');
+ 　　   startMessage.id = 'startMessage';
+  　　  startMessage.textContent = message;
+  　　  document.body.appendChild(startMessage);
 
         // 5秒後にメッセージを消し、ゲーム開始ボタンを表示
         setTimeout(function() {
