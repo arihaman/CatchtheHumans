@@ -87,20 +87,22 @@
             display: none;
         }
 
-         /* モバイル対応 */
-    @media (max-width: 600px) {
-        #score, #timer {
-            font-size: 18px;
+        /* モバイル対応 */
+        @media (max-width: 600px) {
+         #score, #timer {
+         font-size: 18px;
         }
-        .human, .bug {
-            width: 60px;
-            height: 60px;
+
+       .human, .bug {
+         width: 60px;
+         height: auto;  /* 高さは自動調整 */
         }
+
         #startButton, #resetButton {
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-    }
+         padding: 10px 20px;
+         font-size: 16px;
+         }
+      }
     </style>
 </head>
 <body>
