@@ -87,6 +87,20 @@
             font-family: 'Impact', sans-serif; /* 男の子っぽいフォント */
             color: #FFBF00; /* 明るい黄色 */
         }
+        #startMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: block;
+            white-space: pre-line;
+        }
     
         /* モバイル対応 */
         @media (max-width: 600px) {
@@ -102,7 +116,7 @@
                 font-size: 16px;
             }
     
-            #endMessage {
+            #endMessage,#startMessage {
                 font-size: 24px; /* 小さく調整 */
             }
         }
@@ -119,6 +133,29 @@
     </div>
 
     <script>
+        window.onload = function() {
+        const message = "れいくんじんくんをクリックしてつかまえてね！\n虫をつかまえたらダメだよ～";
+        const startMessage = document.createElement('div');
+        startMessage.id = 'startMessage';
+        startMessage.textContent = message;
+        startMessage.style.position = 'absolute';
+        startMessage.style.top = '50%';
+        startMessage.style.left = '50%';
+        startMessage.style.transform = 'translate(-50%, -50%)';
+        startMessage.style.fontSize = '24px';
+        startMessage.style.color = 'white';
+        startMessage.style.textAlign = 'center';
+        startMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        startMessage.style.padding = '20px';
+        startMessage.style.borderRadius = '10px';
+        document.body.appendChild(startMessage);
+
+        // 5秒後にメッセージを消し、ゲーム開始ボタンを表示
+        setTimeout(function() {
+            startMessage.style.display = 'none';
+            document.getElementById('startButton').style.display = 'block';  // ゲーム開始ボタンを表示
+        }, 5000);  // 5秒後にメッセージを消す
+    };
         const gameArea = document.getElementById('gameArea');
         const scoreDisplay = document.getElementById('score');
         const timerDisplay = document.getElementById('timer');
