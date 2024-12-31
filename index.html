@@ -8,13 +8,13 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: "Comic Sans MS", sans-serif; /* よりカジュアルなフォント */
         }
         #gameArea {
             position: relative;
             width: 100vw;
             height: 100vh;
-            background: lightblue;
+            background: #1E2A47; /* ダークブルー */
             overflow: hidden;
         }
         .target {
@@ -28,7 +28,6 @@
             max-width: 100%;
             max-height: 100%;
             display: block;
-            transition: none; /* アニメーションを無効化 */
         }
         .human {
             background-size: cover;
@@ -39,7 +38,7 @@
         #score, #timer {
             position: absolute;
             top: 10px;
-            font-size: 24px;
+            font-size: 28px;
             color: white;
             text-shadow: 2px 2px 5px black;
         }
@@ -57,26 +56,24 @@
             padding: 20px 40px;
             font-size: 24px;
             cursor: pointer;
-            background: green;
+            background: #FF6F61; /* オレンジ色 */
             color: white;
             border: none;
-            border-radius: 10px;
-            box-shadow: 2px 2px 5px black;
+            border-radius: 12px;
+            box-shadow: 2px 2px 10px black;
         }
         #resetButton {
             display: none;
-            background: red;
+            background: #FF4040; /* 赤 */
         }
-
         #highScore {
-        position: absolute;
-        top: 50px;
-        left: 10px;
-        font-size: 24px;
-        color: white;
-        text-shadow: 2px 2px 5px black;
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 5px black;
         }
-
         #endMessage {
             position: absolute;
             top: 40%;
@@ -84,34 +81,31 @@
             transform: translate(-50%, -50%);
             font-size: 32px;
             color: white;
-            text-shadow: 2px 2px 5px black;
+            text-shadow: 3px 3px 10px black;
             display: none;
-            white-space: pre-line;  
+            white-space: pre-line;
+            font-family: 'Impact', sans-serif; /* 男の子っぽいフォント */
+            color: #FFBF00; /* 明るい黄色 */
         }
-
+    
         /* モバイル対応 */
         @media (max-width: 600px) {
-         #score, #timer {
-         font-size: 18px;
+            #score, #timer {
+                font-size: 18px;
+            }
+            .human, .bug {
+                width: 60px;
+                height: auto;
+            }
+            #startButton, #resetButton {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+    
+            #endMessage {
+                font-size: 24px; /* 小さく調整 */
+            }
         }
-
-       .human, .bug {
-         width: 60px;
-         height: auto;  /* 高さは自動調整 */
-        }
-
-        #startButton, #resetButton {
-         padding: 10px 20px;
-         font-size: 16px;
-         }
-
-         /* ゲーム終了時のメッセージ調整 */
-        #endMessage {
-         font-size: 24px; /* メッセージの文字サイズを小さく調整 */
-         top: 40%; /* メッセージを中央付近に配置 */
-         transform: translate(-50%, -50%); /* 完全に中央に配置 */
-        }
-      }
     </style>
 </head>
 <body>
