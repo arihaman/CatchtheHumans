@@ -136,12 +136,18 @@
 
     <script>
         window.onload = function() {
-        const message = "れいくんじんくんをクリックしてつかまえてね!\n虫をつかまえたらダメだよ～";
+        const message = "れいくんじんくんをクリックしてつかまえてね\n虫をつかまえたらダメだよ～";
         const startMessage = document.createElement('div');
  　　   startMessage.id = 'startMessage';
   　　  startMessage.textContent = message;
   　　  document.body.appendChild(startMessage);
 
+    　　// モバイルデバイスでのサイズ調整
+  　　  const isMobile = window.innerWidth <= 600;
+  　　  if (isMobile) {
+        startMessage.style.fontSize = '18px';  // モバイル用にフォントサイズを小さく設定
+        startMessage.style.padding = '12px';   // パディングも少なく設定
+    　　}
         // 5秒後にメッセージを消し、ゲーム開始ボタンを表示
         setTimeout(function() {
             startMessage.style.display = 'none';
