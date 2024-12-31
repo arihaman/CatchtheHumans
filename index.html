@@ -28,7 +28,7 @@
             max-width: 100%;
             max-height: 100%;
             display: block;
-        　　transition: none; /* アニメーションを無効化 */
+            transition: none; /* アニメーションを無効化 */
         }
         .human {
             background-size: cover;
@@ -86,6 +86,7 @@
             color: white;
             text-shadow: 2px 2px 5px black;
             display: none;
+            white-space: pre-line;  
         }
 
         /* モバイル対応 */
@@ -363,7 +364,7 @@
 
            // 終了メッセージを表示
            const endMessage = document.getElementById('endMessage');
-           endMessage.textContent = `${score}点でした！あそんでくれてありがと～♡`;
+           endMessage.textContent = `${score}点でした！\nあそんでくれてありがと～♡`;
            endMessage.style.display = 'block';  // メッセージを表示
            
            // すべてのターゲット（虫と人）を削除
