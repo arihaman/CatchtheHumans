@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Humans</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #gameArea {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: lightblue;
+            overflow: hidden;
+        }
+        .target {
+            position: absolute;
+            width: auto;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.1s linear;
+        }
+        .target img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        .human {
+            background-size: cover;
+        }
+        .bug {
+            background-size: cover;
+        }
+        #score, #timer {
+            position: absolute;
+            top: 10px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 5px black;
+        }
+        #score {
+            left: 10px;
+        }
+        #timer {
+            right: 10px;
+        }
+        #startButton, #resetButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background: green;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px black;
+        }
+        #resetButton {
+            display: none;
+            background: red;
+        }
+
+        #highScore {
+        position: absolute;
+        top: 50px;
+        left: 10px;
+        font-size: 24px;
+        color: white;
+        text-shadow: 2px 2px 5px black;
+        }
+
+         /* モバイル対応 */
+    @media (max-width: 600px) {
+        #score, #timer {
+            font-size: 18px;
+        }
+        .human, .bug {
+            width: 60px;
+            height: 60px;
+        }
+        #startButton, #resetButton {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="score">Score: 0</div>
+        <div id="timer">Time: 60</div>
+        <div id="highScore"></div>
+        <button id="startButton">Start Game</button>
+        <button id="resetButton">Reset Game</button>
+    </div>
+
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startButton = document.getElementById('startButton');
+        const resetButton = document.getElementById('resetButton');
+
+        let score = 0;
+        let timeLeft = 60;
+
+        const highScoreDisplay = document.getElementById('highScore');
+        const storedHighScore = localStorage.getItem('highScore') || 0;
+        highScoreDisplay.textContent = `High Score: ${storedHighScore}`;
+
+        function updateScore(points) {
+            score += points;
+            scoreDisplay.textContent = `Score: ${score}`;
+
+            // 高得点を更新
+            const highScore = parseInt(localStorage.getItem('highScore')) || 0;
+             if (score > highScore) {
+                 localStorage.setItem('highScore', score);
+                 highScoreDisplay.textContent = `High Score: ${score}`;
+            }
+        }
+        
+        let gameInterval;
+        let humans = [];
+        let bugs = [];
+        let humanSpeedIncrement = 0.5;
+        let mouseX = 0, mouseY = 0;
+        let bugSpawnInterval;
+        const audio = new Audio('background.mp3');
+        const clickSound = new Audio('click.mp3');
+        const gameOverSound = new Audio('gameover.mp3');
+
+        function createTarget(className, x, y, imagePath) {
+    const target = document.createElement('div');
+    target.className = `target ${className}`;
+    target.style.left = `${x}px`;
+    target.style.top = `${y}px`;
+
+    const img = document.createElement('img');
+    img.src = imagePath;
+    img.style.width = '100px';
+    img.style.height = 'auto';
+    target.appendChild(img);
+
+    target.velocityX = (Math.random() - 0.5) * 4;
+    target.velocityY = (Math.random() - 0.5) * 4;
+
+    // **クリックリスナーを追加**
+    if (className === 'human') {
+        target.addEventListener('click', () => {
+            updateScore(10);
+            target.remove(); // 人間を削除
+            humans = humans.filter(h => h !== target);
+
+            // 新しい人間を生成
+            const margin = 50;
+            const x = Math.random() * (window.innerWidth - margin * 2) + margin;
+            const y = Math.random() * (window.innerHeight - margin * 2) + margin;
+            humans.push(createTarget('human', x, y, `human${Math.floor(Math.random() * 4) + 1}.png`));
+            clickSound.play();
+        });
+    } else if (className === 'bug') {
+        target.addEventListener('click', () => {
+            updateScore(-5);
+            gameOverSound.play();
+        });
+    }
+
+    gameArea.appendChild(target);
+    return target;
+}
+
+        function spawnHumans() {
+            const margin = 50; // Avoid spawning too close to the edges
+            for (let i = 0; i < 4; i++) {
+                const x = Math.random() * (window.innerWidth - margin * 2) + margin;
+                const y = Math.random() * (window.innerHeight - margin * 2) + margin;
+                humans.push(createTarget('human', x, y, `human${i + 1}.png`));
+            }
+        }
+
+        function spawnBugs(count) {
+            const margin = 50; // Avoid spawning too close to the edges
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * (window.innerWidth - margin * 2) + margin;
+                const y = Math.random() * (window.innerHeight - margin * 2) + margin;
+                const bugIndex = Math.floor(Math.random() * 12) + 1;
+                bugs.push(createTarget('bug', x, y, `bug${bugIndex}.png`));
+            }
+        }
+
+        function moveTargets() {
+             humans.forEach(human => {
+               let x = parseFloat(human.style.left);
+               let y = parseFloat(human.style.top);
+
+               //   マウスから離れたベクトルを計算する
+               const dx = x + 25 - mouseX;
+               const dy = y + 25 - mouseY;
+               const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 200) { // 感度調整（200px近接）
+              human.velocityX += (dx / distance) * 0.1; // 近づくと早く遠ざかる
+              human.velocityY += (dy / distance) * 0.1;
+        }
+
+               // 速度で位置を更新
+               x += human.velocityX;
+               y += human.velocityY;
+
+               //   壁との衝突や逆方向の確認
+               if (x <= 0 || x >= window.innerWidth - 50) human.velocityX *= -1;
+               if (y <= 0 || y >= window.innerHeight - 50) human.velocityY *= -1;
+
+             human.style.left = `${Math.min(Math.max(x, 0), window.innerWidth - 50)}px`;
+             human.style.top = `${Math.min(Math.max(y, 0), window.innerHeight - 50)}px`;
+
+               // 摩擦を追加して、時間の経過とともに人間の速度をわずかに遅くします
+               human.velocityX *= 0.99;
+               human.velocityY *= 0.99;
+    });
+
+    bugs.forEach((bug, index) => {
+                const x = parseFloat(bug.style.left);
+                const y = parseFloat(bug.style.top);
+
+                if (index < 3) {
+                    // First 3 bugs chase the mouse
+                    const dx = mouseX - x;
+                    const dy = mouseY - y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance > 0) {
+                        bug.style.left = `${x + (dx / distance) * 2}px`;
+                        bug.style.top = `${y + (dy / distance) * 2}px`;
+                    }
+                } else {
+                    // Additional bugs bounce like balls
+                    bug.velocityX = bug.velocityX || (Math.random() - 0.5) * 6;
+                    bug.velocityY = bug.velocityY || (Math.random() - 0.5) * 6;
+
+                    let newX = x + bug.velocityX;
+                    let newY = y + bug.velocityY;
+
+                    // Bounce off walls
+                    if (newX <= 0 || newX >= window.innerWidth - 50) bug.velocityX *= -1;
+                    if (newY <= 0 || newY >= window.innerHeight - 50) bug.velocityY *= -1;
+
+                    bug.style.left = `${newX}px`;
+                    bug.style.top = `${newY}px`;
+                }
+            });
+        }
+
+        function updateScore(points) {
+            score += points;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function startGame() {
+            startButton.style.display = 'none';
+            score = 0;
+            timeLeft = 60;
+            scoreDisplay.textContent = 'Score: 0';
+            timerDisplay.textContent = 'Time: ';
+
+            humans = [];
+            bugs = [];
+
+            spawnHumans();
+            spawnBugs(3);
+
+            audio.loop = true;
+            audio.play();
+
+            document.addEventListener('mousemove', (event) => {
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+
+            gameInterval = setInterval(() => {
+                moveTargets();
+                timeLeft -= 1 / 60;
+                timerDisplay.textContent = `Time: ${Math.ceil(timeLeft)}`;
+
+                if (timeLeft <= 50 && !bugSpawnInterval) {
+                    bugSpawnInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(bugSpawnInterval); // 残り時間が0になると停止
+                } else {
+                    spawnBugs(2);
+                }
+            }, 1000); // 1秒ごとに虫を追加
+        }
+
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    // 音楽停止
+                    audio.pause();
+                    audio.currentTime = 0;
+
+                    alert(`Game Over! Final Score: ${score}`);
+                    resetButton.style.display = 'block';
+                }
+            }, 1000 / 60);
+
+            humans.forEach(human => {
+                human.addEventListener('click', () => {
+                    updateScore(10);
+                    human.velocityX *= 1.1; // Increase speed
+                    human.velocityY *= 1.1;
+                    clickSound.play();
+
+                    // クリックされた人を削除
+                    human.remove();
+                    humans = humans.filter(h => h !== human);
+
+                    // 新しい人を生成
+                    const margin = 50; // 画面端から離して生成
+                    const x = Math.random() * (window.innerWidth - margin * 2) + margin;
+                    const y = Math.random() * (window.innerHeight - margin * 2) + margin;
+                    humans.push(createTarget('human', x, y, `human${Math.floor(Math.random() * 4) + 1}.png`));
+                });
+            });
+
+            bugs.forEach(bug => {
+                bug.addEventListener('click', () => {
+                    updateScore(-5);
+                    gameOverSound.play();
+                });
+            });
+        }
+
+        function resetGame() {
+            clearInterval(gameInterval);
+
+            humans.forEach(human => human.remove());
+            bugs.forEach(bug => bug.remove());
+            humans = [];
+            bugs = [];
+            score = 0;
+            timeLeft = 60;
+            scoreDisplay.textContent = 'Score: 0';
+            timerDisplay.textContent = 'Time: 60';
+
+            // 高得点を表示
+            const highScore = localStorage.getItem('highScore') || 0;
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
+
+            startButton.style.display = 'block';
+            resetButton.style.display = 'none';
+        }
+
+        startButton.addEventListener('click', startGame);
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
