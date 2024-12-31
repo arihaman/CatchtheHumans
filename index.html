@@ -76,6 +76,17 @@
         text-shadow: 2px 2px 5px black;
         }
 
+        #endMessage {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: white;
+            text-shadow: 2px 2px 5px black;
+            display: none;
+        }
+
          /* モバイル対応 */
     @media (max-width: 600px) {
         #score, #timer {
@@ -96,9 +107,10 @@
     <div id="gameArea">
         <div id="score">Score: 0</div>
         <div id="timer">Time: 60</div>
-        <div id="highScore"></div>
+        <div id="highScore">High Score: 0</div>
         <button id="startButton">Start Game</button>
         <button id="resetButton">Reset Game</button>
+        <div id="endMessage"></div>
     </div>
 
     <script>
@@ -107,24 +119,18 @@
         const timerDisplay = document.getElementById('timer');
         const startButton = document.getElementById('startButton');
         const resetButton = document.getElementById('resetButton');
+        const endMessage = document.getElementById('endMessage'); 
 
         let score = 0;
         let timeLeft = 60;
 
         const highScoreDisplay = document.getElementById('highScore');
-        const storedHighScore = localStorage.getItem('highScore') || 0;
+        const storedHighScore = parseInt(localStorage.getItem('highScore')) || 0;
         highScoreDisplay.textContent = `High Score: ${storedHighScore}`;
 
         function updateScore(points) {
-            score += points;
-            scoreDisplay.textContent = `Score: ${score}`;
-
-            // 高得点を更新
-            const highScore = parseInt(localStorage.getItem('highScore')) || 0;
-             if (score > highScore) {
-                 localStorage.setItem('highScore', score);
-                 highScoreDisplay.textContent = `High Score: ${score}`;
-            }
+          score += points;
+          scoreDisplay.textContent = `Score: ${score}`;
         }
         
         let gameInterval;
@@ -258,17 +264,12 @@
             });
         }
 
-        function updateScore(points) {
-            score += points;
-            scoreDisplay.textContent = `Score: ${score}`;
-        }
-
         function startGame() {
             startButton.style.display = 'none';
             score = 0;
             timeLeft = 60;
             scoreDisplay.textContent = 'Score: 0';
-            timerDisplay.textContent = 'Time: ';
+            timerDisplay.textContent = 'Time: 60';
 
             humans = [];
             bugs = [];
@@ -289,25 +290,25 @@
                 timeLeft -= 1 / 60;
                 timerDisplay.textContent = `Time: ${Math.ceil(timeLeft)}`;
 
+                if (timeLeft <= 0) {
+                  clearInterval(gameInterval);
+                  clearInterval(bugSpawnInterval); // Ensure bug spawn stops
+                  audio.pause();
+                  audio.currentTime = 0;
+                  resetButton.style.display = 'block';
+                  endGame();
+                }
+
                 if (timeLeft <= 50 && !bugSpawnInterval) {
-                    bugSpawnInterval = setInterval(() => {
-                if (timeLeft <= 0) {
-                    clearInterval(bugSpawnInterval); // 残り時間が0になると停止
-                } else {
-                    spawnBugs(2);
+                      bugSpawnInterval = setInterval(() => {
+                        if (timeLeft <= 0) {
+                          clearInterval(bugSpawnInterval); // 残り時間が0になると停止
+                         } else {
+                         spawnBugs(2);
+                         }
+                      }, 1000); // 1秒ごとに虫を追加
                 }
-            }, 1000); // 1秒ごとに虫を追加
-        }
 
-                if (timeLeft <= 0) {
-                    clearInterval(gameInterval);
-                    // 音楽停止
-                    audio.pause();
-                    audio.currentTime = 0;
-
-                    alert(`Game Over! Final Score: ${score}`);
-                    resetButton.style.display = 'block';
-                }
             }, 1000 / 60);
 
             humans.forEach(human => {
@@ -337,24 +338,56 @@
             });
         }
 
+        function endGame() {
+           clearInterval(gameInterval);
+           clearInterval(bugSpawnInterval);
+           audio.pause();
+           audio.currentTime = 0;
+ 
+           // ハイスコアの更新
+           const highScore = parseInt(localStorage.getItem('highScore')) || 0;
+          if (score > highScore) {
+              localStorage.setItem('highScore', score);
+              highScoreDisplay.textContent = `High Score: ${score}`;
+            }
+
+           // 終了メッセージを表示
+           const endMessage = document.getElementById('endMessage');
+           endMessage.textContent = `${score}点でした！あそんでくれてありがと～♡`;
+           endMessage.style.display = 'block';  // メッセージを表示
+           
+           // すべてのターゲット（虫と人）を削除
+           humans.forEach(human => human.remove());
+           bugs.forEach(bug => bug.remove());
+
+           humans = [];
+           bugs = [];
+        }
+
         function resetGame() {
-            clearInterval(gameInterval);
+          clearInterval(gameInterval);
 
-            humans.forEach(human => human.remove());
-            bugs.forEach(bug => bug.remove());
-            humans = [];
-            bugs = [];
-            score = 0;
-            timeLeft = 60;
-            scoreDisplay.textContent = 'Score: 0';
-            timerDisplay.textContent = 'Time: 60';
+          endMessage.style.display = 'none';
+ 
+          // バグの追加: bugSpawnIntervalをクリアする
+          clearInterval(bugSpawnInterval);
+          bugSpawnInterval = null;
 
-            // 高得点を表示
-            const highScore = localStorage.getItem('highScore') || 0;
-            highScoreDisplay.textContent = `High Score: ${highScore}`;
+          humans.forEach(human => human.remove());
+          bugs.forEach(bug => bug.remove());
+          humans = [];
+          bugs = [];
+          score = 0;
+          timeLeft = 60;
+          scoreDisplay.textContent = 'Score: 0';
+          timerDisplay.textContent = 'Time: 60';
+      
+          // 高得点を再表示
+          const highScore = parseInt(localStorage.getItem('highScore')) || 0;
+          highScoreDisplay.textContent = `High Score: ${highScore}`;
 
-            startButton.style.display = 'block';
-            resetButton.style.display = 'none';
+          startButton.style.display = 'block';
+          resetButton.style.display = 'none';
         }
 
         startButton.addEventListener('click', startGame);
